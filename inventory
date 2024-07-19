@@ -1,2 +1,2 @@
 [servers]
-server1 ansible_host=10.26.26.228
+server1 ansible_host=*******
