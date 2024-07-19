@@ -2,3 +2,4 @@
 - hosts: servers
   roles:
     - python_selenium_setup
+
