@@ -19,29 +19,53 @@
     name: selenium
     executable: pip3
 
-- name: Install Chrome browser
-  get_url:
-    url: "https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm"
-    dest: /tmp/google-chrome-stable_current_x86_64.rpm
+- name: Add Google Chrome repository
+  yum_repository:
+    name: google-chrome
+    description: Google Chrome
+    baseurl: http://dl.google.com/linux/chrome/rpm/stable/x86_64
+    gpgcheck: yes
+    gpgkey: https://dl-ssl.google.com/linux/linux_signing_key.pub
+    enabled: yes
 
 - name: Install Chrome browser
   yum:
-    name: /tmp/google-chrome-stable_current_x86_64.rpm
-    state: present
+    name: google-chrome-stable
+    state: latest
 
 - name: Download Chrome WebDriver
   get_url:
-    url: "https://chromedriver.storage.googleapis.com/{{ chromedriver_version }}/chromedriver_linux64.zip"
+    url: "https://storage.googleapis.com/chrome-for-testing-public/126.0.6478.182/linux64/chromedriver-linux64.zip"
     dest: /tmp/chromedriver.zip
     mode: '0644'
+
+- name: Create temporary directory for extraction
+  file:
+    path: /tmp/chromedriver
+    state: directory
 
 - name: Unzip Chrome WebDriver
   unarchive:
     src: /tmp/chromedriver.zip
-    dest: /usr/local/bin/
-    copy: false
+    dest: /tmp/chromedriver/
+    remote_src: yes
+
+- name: Move Chrome WebDriver to /usr/local/bin
+  command: mv /tmp/chromedriver/chromedriver-linux64 /usr/local/bin/chromedriver
+  args:
+    removes: /usr/local/bin/chromedriver
 
 - name: Make Chrome WebDriver executable
   file:
     path: /usr/local/bin/chromedriver
     mode: '0755'
+
+- name: Copy Selenium script to the target server
+  copy:
+    src: files/my_selenium_script.py
+    dest: /root/my_selenium_script.py
+    mode: '0755'
+
+- name: Run the Selenium script
+  command: python3 /root/my_selenium_script.py
+
